@@ -1,0 +1,101 @@
+<div class="col-12">
+  <nav>
+    <ul class="nav nav-tabs">
+      <li class="nav-item" *ngFor="let table of tables; let $index = index">
+        <a class="nav-link" [ngClass]="{active:table.name==tableSelected}" (click)="clickNav(table.name,$index)" data-toggle="tab" href="#{{table.name}}" role="tab" aria-selected="true">{{table.name}}</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" data-toggle="tab" href="#" role="tab"><i class="fa fa-plus-square"></i></a>
+      </li>
+    </ul>
+  </nav>
+  <div class="tab-content">
+  <div class="tab-pane fade show active" role="tabpanel" id="asset">
+    <div class="btn btn-group">
+      <input type="text" name="search" placeholder="search...." (change)="tables[tableSelectedIndex].changeSearchText($event)" value="{{tables[tableSelectedIndex].searchText}}">
+      <select (change)="tables[tableSelectedIndex].changeOperation($event)">
+        <option *ngFor="let item of tables[tableSelectedIndex].operationSelector" value="{{item.value}}" [selected]="item.value==tables[tableSelectedIndex].searchOperation">{{item.label}}</option>
+      </select>
+      <button class="btn btn-primary" (click)="getRows(tables[tableSelectedIndex])"><i class="fa fa-search"></i></button>
+    </div>
+    <div class="btn btn-group">
+      <button class="btn btn-primary">+<i class="fa fa-columns"></i></button>
+      <button class="btn btn-secondary" (click)="tables[tableSelectedIndex].showReference=!tables[tableSelectedIndex].showReference"><i class="fa fa-calculator"></i></button>
+      <button class="btn btn-success" (click)="save()"><i class="fa fa-save"></i></button>
+    </div>
+    <div class="check-all">
+      <span>
+        <input type="checkbox" [checked]="tables[tableSelectedIndex].searchAllColumns" (change)="tables[tableSelectedIndex].selectAllCoumns()"> to filter by all columns
+      </span>
+    </div>
+    <table class="table table-striped table-bordered">
+      <thead>
+        <tr>
+          <th *ngFor="let column of tables[tableSelectedIndex].rows[0].columns">
+            <span>{{column.name}}</span>
+            <input type="checkbox" [checked]="column.selected" [hidden]="!column.selected && tables[tableSelectedIndex].searchAllColumns" (change)="selectColumn(column,tables[tableSelectedIndex])" class="checkbox check-to-filter">
+            <i class="fa fa-sort sort" [hidden]="column.orderBy.orderByType!=0" (click)="tables[tableSelectedIndex].toOrder(column)"></i>
+            <i class="fa fa-caret-up sort" [hidden]="column.orderBy.orderByType!=1" (click)="tables[tableSelectedIndex].toOrder(column)"></i>
+            <i class="fa fa-caret-down sort" [hidden]="column.orderBy.orderByType!=2" (click)="tables[tableSelectedIndex].toOrder(column)"></i>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of getRows(tables[tableSelectedIndex])">
+          <td *ngFor="let item of row.columns">
+            <span *ngIf="!isTable(item.value)">
+              {{item.compiledValue}}
+            </span>
+            <div *ngIf="isTable(item.value)">
+              <span>{{item.name}} <i class="fa fa-caret-up"></i> <i class="fa fa-external-link-square folder-right"></i></span>
+              <sub-grid [table]="item.value[0]"></sub-grid>
+            </div>
+            <span class="cellId"  [hidden]="!tables[tableSelectedIndex].showReference"> {{item.orderBy.placeholder}}</span>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <i class="fa fa-plus-square"></i>
+          </td>
+          <td *ngFor="let item of newRow()"></td>
+        </tr>
+      </tbody>
+    </table>
+    <nav aria-label="Page navigation example">
+      <ul class="pagination">
+        <li class="page-item" (click)="setPage(1,tables[tableSelectedIndex])" [hidden]="!allowGoToStart(tables[tableSelectedIndex])">
+          <a class="page-link" href="#">
+            << 
+          </a>
+        </li>
+        <li class="page-item" (click)="setPage(tables[tableSelectedIndex].page-3,tables[tableSelectedIndex])" [hidden]="!allowGoBack(tables[tableSelectedIndex])">
+          <a class="page-link" href="#">
+            <
+          </a>
+        </li>
+        <li class="page-item" (click)="setPage(page,tables[tableSelectedIndex])" *ngFor="let page of getPreviewPage(tables[tableSelectedIndex])">
+          <a class="page-link" href="#">{{page}}</a>
+        </li>
+        <li class="page-item">
+          <div class="page-link active">{{tables[tableSelectedIndex].page}}</div>
+        </li>
+        <li class="page-item" (click)="setPage(page,tables[tableSelectedIndex])" *ngFor="let page of getNextPage(tables[tableSelectedIndex])">
+          <a class="page-link" href="#">{{page}}</a>
+        </li>
+        <li class="page-item" (click)="setPage(tables[tableSelectedIndex].page+3,tables[tableSelectedIndex])" [hidden]="!allowGoNext(tables[tableSelectedIndex])">
+          <a class="page-link" href="#">></a>
+        </li>
+        <li class="page-item" (click)="setPage(tables[tableSelectedIndex].rows.length/tables[tableSelectedIndex].take,tables[tableSelectedIndex])" [hidden]="!allowGoToEnd(tables[tableSelectedIndex])">
+          <a class="page-link" href="#">>></a>
+        </li>
+      </ul>
+      <div class="btn-group list-page">
+        <select class="form-control" (change)="tables[tableSelectedIndex].changeTake($event)">
+          <option *ngFor="let item of tables[tableSelectedIndex].takeSelector" value="{{item.value}}" [selected]="selectedTake(item.value,tables[tableSelectedIndex].take)">{{item.label}}</option>
+        </select>
+      </div>
+      <div class="item-display">{{getFrom(tables[tableSelectedIndex])}} - {{getTo(tables[tableSelectedIndex])}} from {{tables[tableSelectedIndex].rows.length}}</div>
+    </nav>
+  </div>
+  </div>
+</div>

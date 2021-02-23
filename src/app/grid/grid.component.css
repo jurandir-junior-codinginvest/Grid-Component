@@ -1,0 +1,45 @@
+.sort{
+    float:right;
+    cursor:pointer;
+}
+
+.list-page{
+    float:right;
+}
+
+.pagination{
+    float:left;
+}
+
+.item-display{
+    margin-top:6px;
+    margin-right:15px;
+    float:right;
+}
+
+.check-to-filter{
+    margin-top:2px;
+    margin-left:8px;
+}
+
+.check-all{
+    margin-top:15px;
+    margin-right:20px;
+    float:right;
+}
+
+.folder-right{
+    float:right;
+}
+
+.cellId{
+    font-style: italic;
+    font-weight: 100;
+    color: #555;
+    font-size: 10pt;
+}
+
+.page-link.active{
+    color:#000;
+    text-decoration: underline;
+}
