@@ -1,4 +1,6 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { noop } from 'rxjs';
 import { Column, Row, Table } from '../class/Table';
 import { GridService } from '../services/grid.service';
 
@@ -20,32 +22,43 @@ export class GridComponent implements OnInit {
 
   @Input()
   public meta: any;
+  
+  @Input() 
+  public externalFunctions:any;
 
-  constructor(public gridService: GridService) {
+  constructor(public gridService: GridService,private http:HttpClient) {
   }
 
   //--
   private compileFormulas(currentTable: Table) {
     currentTable.rows.forEach((row) => {
-      row.columns.forEach((column) => {
-        column.compiledValue = this.executeFormula(column.value, currentTable.name);
+      row.columns.forEach(async (column) => {
+        column.compiledValue = await this.executeFormula(column.value, currentTable.name);
       });
     });
   }
 
-  private executeFormula(formula: string, currentTableName: string) {
+  private async executeFormula(formula: string, currentTableName: string) {
     if (formula && formula.toString().indexOf("=") > -1) {
       formula = formula.substr(1);
       let command = this.getCommand(formula);
       switch (command) {
         case "SUM":
-          let sumResult = eval(this.executeSUM(formula, currentTableName));
+          let sumResult = eval(await this.executeSUM(formula, currentTableName));
           return sumResult.toString();
         case "COUNTA":
-          let countaResult = eval(this.executeCOUNTA(formula,currentTableName));
+          let countaResult = eval(await this.executeCOUNTA(formula,currentTableName));
           return countaResult.toString();
+        case "FUNCTION":
+          formula = formula.replace("FUNCTION","");
+          let functionName = formula.split(",")[0].replace("(","").replace("\"","").replace("\"","");
+          let parameters = formula.split(",")[1].replace(")","");
+          let functionParameters = JSON.parse(parameters);
+          let externalFunction = await this.externalFunctions[functionName](functionParameters);
+          return externalFunction;
         default:
-          let result = eval(this.defaultExecuteFormula(formula, currentTableName));
+          let defaultResult = await this.defaultExecuteFormula(formula, currentTableName)
+          let result = eval(defaultResult);
           return result.toString();
       }
     } else {
@@ -53,7 +66,7 @@ export class GridComponent implements OnInit {
     }
   }
 
-  private executeCOUNTA(countaFormula: string, currentTableName: string) {
+  private async executeCOUNTA(countaFormula: string, currentTableName: string) {
     let countaResult = 0;
     let command = "COUNTA";
     let startCOUNTA = countaFormula.indexOf(command);
@@ -61,15 +74,15 @@ export class GridComponent implements OnInit {
     let endCOUNTA = countaFormula.indexOf(")")+1;
     let countaPlaceHolder = countaFormula.substr(startCOUNTA,endCOUNTA);
     let addresses = this.getAddresses(countaFormula, currentTableName);
-    let cells = this.getCellsFromTable(addresses[0].normalizedAddress);
-    cells.forEach(cell => {
+    let cells = <string[]>await this.getCellsFromTable(addresses[0].normalizedAddress);
+    cells.forEach((cell:any) => {
       countaResult += 1;
     });
     let counta =  countaResult.toString();
     return countaFormula.replace(countaPlaceHolder,counta);
   }
 
-  private executeSUM(sumFormula: string, currentTableName: string) {
+  private async executeSUM(sumFormula: string, currentTableName: string) {
     let sumResult = 0;
     let command = "SUM";
     let startSUM = sumFormula.indexOf(command);
@@ -77,19 +90,22 @@ export class GridComponent implements OnInit {
     let endSUM = sumFormula.indexOf(")")+1;
     let sumPlaceHolder = sumFormula.substr(startSUM,endSUM);
     let addresses = this.getAddresses(sumFormula, currentTableName);
-    let cells = this.getCellsFromTable(addresses[0].normalizedAddress);
-    cells.forEach(cell => {
+    let cells = <string[]>await this.getCellsFromTable(addresses[0].normalizedAddress);
+    cells.forEach((cell:any) => {
       sumResult += parseFloat(cell);
     });
     return sumFormula.replace(sumPlaceHolder,sumResult.toString());
   }
 
-  private defaultExecuteFormula(formula: string, currentTableName: string) {
+  private async defaultExecuteFormula(formula: string, currentTableName: string) {
     let addresses = this.getAddresses(formula, currentTableName);
     for (let i = 0; i < addresses.length; i++) {
-      let cell = this.getCellsFromTable(addresses[i].normalizedAddress)[0];
-      let cellValue = <string>this.executeFormula(cell, currentTableName);
-      formula = formula.replace(addresses[i].rawAddress, cellValue.toString());
+      let cells = await this.getCellsFromTable(addresses[i].normalizedAddress);
+      let cell = cells[0];
+      let cellValue = await this.executeFormula(cell, currentTableName);
+     if(cellValue){
+        formula = formula.replace(addresses[i].rawAddress, cellValue.toString());
+     }
     }
     return formula;
   }
@@ -145,29 +161,34 @@ export class GridComponent implements OnInit {
     return address.indexOf("!") > -1 ? address : "'" + currentTableName + "'!" + address;
   }
 
-  private getCellsFromTable(normalizedAddress: string) {
+  private async getCellsFromTable(normalizedAddress: string) {
     let tableName = normalizedAddress.split("!")[0].replace("'", "").replace("'", "");
     let cellAddress = normalizedAddress.split("!")[1];
     let table = <Table>this.getTableByName(tableName);
-    return this.getCells(cellAddress, table);
+    return await this.getCells(cellAddress, table);
   }
 
   private getTableByName(tableName: string) {
     return this.tables.find(x => x.name == tableName);
   }
 
-  private getCells(cellAddress: string, table: Table) {
+  private async getCells(cellAddress: string, table: Table) {
     let cells = new Array<string>();
+    if(cellAddress=="D2:D")
+    noop();
     let isRange = cellAddress.indexOf(":") > -1;
     if (!isRange) {
-      table.rows.forEach((row) => {
-        row.columns.forEach((column) => {
+      for(let i=0;i<table.rows.length;i++){
+        let row = table.rows[i];
+        for(let j=0;j<row.columns.length;j++){
+          let column = row.columns[j];
           if (column.orderBy.placeholder == cellAddress) {
-            let columnValue = this.executeFormula(column.value,table.name);
-            cells.push(columnValue);
+            let columnValue = await this.executeFormula(column.value,table.name);
+            cells.push(columnValue.toString());
+            return cells;
           }
-        });
-      });
+        }
+      }
     } else {
       let from = cellAddress.split(":")[0];
       let to = cellAddress.split(":")[1];
@@ -188,8 +209,10 @@ export class GridComponent implements OnInit {
       let columnDirection = fromColumnIndex <= toColumnIndex ? 0 : 1;
       let rowDirection = fromRowIndex <= toRowIndex ? 0 : 1;
 
-      table.rows.forEach((row) => {
-        row.columns.forEach((column) => {
+      for(let i=0;i<table.rows.length;i++){
+        let row = table.rows[i];
+        for(let j=0;j<row.columns.length;j++){
+          let column = row.columns[j];
           let cellColumn = this.getNumberByChar(column.orderBy.placeholder.substr(0, 1));
           let cellRow = parseInt(column.orderBy.placeholder.substr(1));
           let isColumnInRange = false;
@@ -200,7 +223,9 @@ export class GridComponent implements OnInit {
               isColumnInRange = true;
             }
           } else {
-            debugger
+            if (cellColumn <= fromColumnIndex && cellColumn >= toColumnIndex) {
+              isColumnInRange = true;
+            }
           }
 
           if (rowDirection == 0) {
@@ -208,16 +233,18 @@ export class GridComponent implements OnInit {
               isRowInRange = true;
             }
           } else {
-            debugger
+            if (cellRow <= fromRowIndex && cellRow >= toRowIndex) {
+              isRowInRange = true;
+            }
           }
 
           if (isColumnInRange && isRowInRange) {
-            let columnValue = this.executeFormula(column.value,table.name);
+            let columnValue = await this.executeFormula(column.value,table.name);
             cells.push(columnValue);
           }
-
-        });
-      });
+        }
+      }
+      
     }
 
     return cells;

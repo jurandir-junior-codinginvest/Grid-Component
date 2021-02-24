@@ -1,0 +1,10 @@
+{
+    "/stocks": {
+      "target": "https://api.hgbrasil.com",
+      "secure": true,
+      "pathRewrite": {
+      "^/stocks": ""
+    },
+      "changeOrigin": true
+    }
+  }

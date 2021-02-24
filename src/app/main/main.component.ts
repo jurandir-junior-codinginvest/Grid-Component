@@ -9,11 +9,19 @@ import {Balanceamento} from '../../assets/sample.json';
 })
 export class MainComponent implements OnInit {
   public meta:any;
+  public externalFunctions:any;  
+
   constructor(public riskManagerService:RiskManagerService) {
     this.meta = Balanceamento;//this.riskManagerService.get();
-   }
+    let getPrice = async(item:any)=> await this.getPrice(item);
+    this.externalFunctions = {"getPrice":getPrice};
+ }
+
+  private async getPrice(item:any){
+    return await this.riskManagerService.getStockPrice(item);
+  }
 
   ngOnInit(): void {
   }
-
 }
+

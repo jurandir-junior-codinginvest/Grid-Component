@@ -1,3 +1,4 @@
+import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { Asset } from "../types/asset";
 import { Period } from "../types/period";
@@ -6,7 +7,9 @@ import { RiskManager } from "../types/Risk-manager"
 @Injectable()
 export class RiskManagerService{
     private riskManager:RiskManager;
-    constructor(){
+    public cotations:Array<Cotation>;
+    constructor(private http:HttpClient){
+        this.cotations = new Array<Cotation>();
         this.riskManager = {
             assets:new Array<Asset>(),
             cash:{
@@ -49,7 +52,28 @@ export class RiskManagerService{
         this.riskManager.historic.push({assetsQuantity:623,assetsMediumPrice:775.98,estate:630.45,income:7759.78,date:new Date("2020-12-15")});
     }
 
+    public async getStockPrice(item:any){
+        let cotation = this.cotations.find(x=>x.symbol==item.symbol);
+        if(!cotation){
+         cotation = {symbol:item.symbol,price:"Carregando..."};
+         let result = <any>(await this.http.get("/stocks/finance/stock_price?key=026c5f3a&symbol="+item.symbol).toPromise().catch((exc)=>{return exc}));
+         if(result.status==403){
+            cotation.price = result.statusText;
+         }else{
+            cotation.price = result["results"][item.symbol.toUpperCase()]["price"];
+         }
+         this.cotations.push(cotation);
+        }
+        return cotation.price;
+    }
+
     public get(){
         return this.riskManager;
     }
+    
 }
+
+type Cotation = {
+    price:string;
+    symbol:string;
+  }

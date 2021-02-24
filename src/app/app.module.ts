@@ -9,6 +9,7 @@ import { GridService } from './services/grid.service';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { SubGridComponent } from './sub-grid/sub-grid.component';
 import { CommonModule } from '@angular/common';
+import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
   declarations: [
@@ -21,7 +22,8 @@ import { CommonModule } from '@angular/common';
     BrowserModule,
     AppRoutingModule,
     BrowserAnimationsModule,
-    CommonModule
+    CommonModule,
+    HttpClientModule,
   ],
   providers: [RiskManagerService,GridService],
   bootstrap: [AppComponent]
