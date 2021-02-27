@@ -1,5 +1,4 @@
-import { HttpClient } from '@angular/common/http';
-import { Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, Input } from '@angular/core';
 import { Table } from '../class/Table';
 import { Column } from "../class/Column";
 import { GridService } from '../services/grid.service';
@@ -12,9 +11,7 @@ import { PaginationService } from '../services/pagination.service';
 })
 export class GridComponent {
   public tableNames: Array<string>;
-  public currentTable!: Table;
-  private paginationService!:PaginationService;
-  private gridService!:GridService;
+  public currentTable: Table | null;
 
   @Input()
   public data: any;
@@ -22,20 +19,21 @@ export class GridComponent {
   @Input()
   public externalFunctions: any;
 
-  constructor(private http: HttpClient) {
+  constructor(private gridService: GridService,private paginationService:PaginationService, private changeDetector: ChangeDetectorRef) {
     this.tableNames = [];
+    this.currentTable = null;
   }
 
   ngOnInit() {
-    this.gridService = new GridService(this.data,this.externalFunctions);
-    let currentTable = this.gridService.getCurrentTable();
-    if(currentTable){
-    this.currentTable = currentTable;
-    } 
-    this.paginationService = new PaginationService(this.currentTable);
+    this.gridService.init(this.data);
+    this.currentTable = this.gridService.getCurrentTable();
   }
 
-  public getTableNames(){
+  public detectChanges() {
+    this.changeDetector.detectChanges();
+  }
+
+  public getTableNames() {
     return this.gridService.getLoadedTableNames();
   }
 

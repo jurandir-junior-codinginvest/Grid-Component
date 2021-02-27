@@ -1,14 +1,14 @@
 {
     "Balanceamento":{
         "ATIVOS":[
-            {"Ativo":"BRML3","Quantidade":100,"Cotação":"10","Valor":"=B2*C2","Participação":"=(D2/Mecanismo!I2)*100","Comprar/Vender":"=((Mecanismo!F2/C2)-B2)"},
-            {"Ativo":"ITSA4","Quantidade":100,"Cotação":"10","Valor":"=B3*C3","Participação":"=(D3/Mecanismo!I2)*100","Comprar/Vender":"=((Mecanismo!F2/C3)-B3)"},
-            {"Ativo":"CMIG4","Quantidade":100,"Cotação":"10","Valor":"=B4*C4","Participação":"=(D4/Mecanismo!I2)*100","Comprar/Vender":"=((Mecanismo!F2/C4)-B4)"},
-            {"Ativo":"ECOR3","Quantidade":100,"Cotação":"10","Valor":"=B5*C5","Participação":"=(D5/Mecanismo!I2)*100","Comprar/Vender":"=((Mecanismo!F2/C5)-B5)"},
-            {"Ativo":"ENAT3","Quantidade":100,"Cotação":"10","Valor":"=B6*C6","Participação":"=(D6/Mecanismo!I2)*100","Comprar/Vender":"=((Mecanismo!F2/C6)-B6)"},
-            {"Ativo":"ROMI3","Quantidade":100,"Cotação":"10","Valor":"=B7*C7","Participação":"=(D7/Mecanismo!I2)*100","Comprar/Vender":"=((Mecanismo!F2/C7)-B7)"},
-            {"Ativo":"CSMG3","Quantidade":100,"Cotação":"10","Valor":"=B8*C8","Participação":"=(D8/Mecanismo!I2)*100","Comprar/Vender":"=((Mecanismo!F2/C8)-B8)"},
-            {"Ativo":"IRBR3","Quantidade":400,"Cotação":"10","Valor":"=B9*C9","Participação":"=(D9/Mecanismo!I2)*100","Comprar/Vender":"=((Mecanismo!F2/C9)-B9)"}
+            {"Ativo":"BRML3","Quantidade":100,"Cotação":"100","Valor":"=B2*C2","Participação":"=(D2/Mecanismo!I2)*100","Comprar/Vender":"=((Mecanismo!F2/C2)-B2)"},
+            {"Ativo":"ITSA4","Quantidade":100,"Cotação":"100","Valor":"=B3*C3","Participação":"=(D3/Mecanismo!I2)*100","Comprar/Vender":"=((Mecanismo!F2/C3)-B3)"},
+            {"Ativo":"CMIG4","Quantidade":100,"Cotação":"100","Valor":"=B4*C4","Participação":"=(D4/Mecanismo!I2)*100","Comprar/Vender":"=((Mecanismo!F2/C4)-B4)"},
+            {"Ativo":"ECOR3","Quantidade":100,"Cotação":"100","Valor":"=B5*C5","Participação":"=(D5/Mecanismo!I2)*100","Comprar/Vender":"=((Mecanismo!F2/C5)-B5)"},
+            {"Ativo":"ENAT3","Quantidade":100,"Cotação":"100","Valor":"=B6*C6","Participação":"=(D6/Mecanismo!I2)*100","Comprar/Vender":"=((Mecanismo!F2/C6)-B6)"},
+            {"Ativo":"ROMI3","Quantidade":100,"Cotação":"100","Valor":"=B7*C7","Participação":"=(D7/Mecanismo!I2)*100","Comprar/Vender":"=((Mecanismo!F2/C7)-B7)"},
+            {"Ativo":"CSMG3","Quantidade":100,"Cotação":"100","Valor":"=B8*C8","Participação":"=(D8/Mecanismo!I2)*100","Comprar/Vender":"=((Mecanismo!F2/C8)-B8)"},
+            {"Ativo":"IRBR3","Quantidade":400,"Cotação":"100","Valor":"=B9*C9","Participação":"=(D9/Mecanismo!I2)*100","Comprar/Vender":"=((Mecanismo!F2/C9)-B9)"}
         ],
         "Mecanismo":[
             {"Valor inicial dos ativos":12400,"Valor final dos ativos":"=SUM(ATIVOS!D2:D)","Valor disponível dos ativos":"=A2-B2","Quantidade de ativos":"=SUM(ATIVOS!B2:B)","Participações por ativo":"=COUNTA(ATIVOS!A2:A)+1","Valor médio por ativo":"=(I2+G2)/E2","Saldo disponível":"=C2+Mecanismo!H2","Caixa inicial-final":"=(CAIXA!B2-CAIXA!C2)*CAIXA!D2","Patrimônio":"=B2+CAIXA!E2"}

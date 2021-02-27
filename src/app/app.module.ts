@@ -2,17 +2,16 @@ import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { GridComponent } from './grid/grid.component';
 import { MainComponent } from './main/main.component';
 import { RiskManagerService } from './services/risk-manager.service';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
+import { GridModule } from './grid/grid.module';
 
 @NgModule({
   declarations: [
     AppComponent,
-    GridComponent,
     MainComponent
   ],
   imports: [
@@ -21,6 +20,7 @@ import { HttpClientModule } from '@angular/common/http';
     BrowserAnimationsModule,
     CommonModule,
     HttpClientModule,
+    GridModule
   ],
   providers: [RiskManagerService],
   bootstrap: [AppComponent]

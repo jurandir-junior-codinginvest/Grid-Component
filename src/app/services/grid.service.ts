@@ -1,15 +1,17 @@
+import { Injectable } from "@angular/core";
 import { Column } from "../class/Column";
 import { Row } from "../class/Row";
 import { Table } from "../class/Table";
 import { OrderByType } from "../enum/OrderByType";
 import { ComboBox } from "../types/ComboBox";
 import { FormulaService } from "./formula.service";
+import { PaginationService } from "./pagination.service";
 
+@Injectable()
 export class GridService {
     private tableNames: Array<string>;
     private tables: Array<Table> = new Array<Table>();
     private tableSelected: Table | null;
-    private formulaService!:FormulaService;
     private operationSelector: Array<ComboBox> = [
         { "label": "Contains", "value": "contains" },
         { "label": "Equals", "value": "equals" },
@@ -30,11 +32,14 @@ export class GridService {
         { "label": "1000", "value": "1000" }
     ];
 
-    constructor(data:any, externalFunctions:any) {
+    constructor(private formulaService: FormulaService, private paginationService: PaginationService) {
         this.tableNames = new Array<string>();
         this.tableSelected = null;
+    }
+
+    public init(data: any) {
         this.tables = this.transformJsonToTable(data);
-        this.formulaService = new FormulaService(this.tables,externalFunctions);
+        this.formulaService.init(this.tables);
         for (let i = 0; i < this.tables.length; i++) {
             let table = this.tables[i];
             this.tableNames.push(table.name);
@@ -42,14 +47,19 @@ export class GridService {
         }
         if (this.tables.length > 0) {
             this.tableSelected = this.tables[0];
+            this.paginationService.init(this.tableSelected);
         }
     }
 
-    public getLoadedTableNames(){
+    public setExternalFunctions(methodName: string, method: any) {
+        this.formulaService.setExternalFunctions(methodName, method);
+    }
+
+    public getLoadedTableNames() {
         return this.tableNames;
     }
 
-    public getCurrentTable(){
+    public getCurrentTable() {
         return this.tableSelected;
     }
 

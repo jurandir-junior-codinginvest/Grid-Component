@@ -1,8 +1,15 @@
+import { Injectable } from "@angular/core";
 import { Table } from "../class/Table";
 
-export class PaginationService{
+@Injectable()
+export class PaginationService {
+    private tableSelected!: Table;
 
-    constructor(private tableSelected:Table){
+    constructor() {
+    }
+
+    public init(tableSelected: Table) {
+        this.tableSelected = tableSelected;
     }
 
     public selectedTake(itemValue: string, currentTake: number) {

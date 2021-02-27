@@ -1,29 +1,30 @@
+import { Injectable } from "@angular/core";
 import { Table } from "../class/Table";
 import { AddressNormalization } from "../types/AddressNormalization";
 
+@Injectable()
 export class FormulaService{
     private CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     private SPECIAL_CHARACTERS = "ÂÁÀÂÃÉÈÊÍÌÎÓÒÔÕÚÙÛ:!' ";
     private NUMERIC = "0123456789";
     private ALLOWED_CHARACTERS = this.CHARACTERS + this.CHARACTERS.toLowerCase() + this.SPECIAL_CHARACTERS + this.SPECIAL_CHARACTERS.toLowerCase();
     private ALPHANUMERIC = this.ALLOWED_CHARACTERS + this.NUMERIC;
+    private externalFunctions:any = {};
+    private tables!:Array<Table>;
     
-    constructor(private tables:Array<Table>, private externalFunctions:any){
+    constructor(){
+    }
+
+    public init(tables:Array<Table>){
+        this.tables = tables;
         for(let i =0;i<this.tables.length;i++){
             let table = this.tables[i];
             this.placeholderMap(table);
         }
     }
 
-    private placeholderMap(table: Table) {
-        let rows = table.rows;
-        for (let i = 0; i < rows.length; i++) {
-            let row = rows[i];
-            for (let j = 0; j < row.columns.length; j++) {
-                let column = row.columns[j];
-                column.orderBy.placeholder = this.getCharByNumber(j) + (i + 2);
-            }
-        }
+    public setExternalFunctions(methodName:string,method:any){
+        this.externalFunctions[methodName] = method;
     }
 
     public compileFormulas(currentTable: Table) {
@@ -48,9 +49,11 @@ export class FormulaService{
                 case "FUNCTION":
                     formula = formula.replace("FUNCTION", "");
                     let functionName = formula.split(",")[0].replace("(", "").replace("\"", "").replace("\"", "");
+                    if(!this.externalFunctions[functionName])
+                        return "Function not found!";
                     let parameters = formula.split(",")[1].replace(")", "");
+                    parameters = await this.executeFormula(parameters, currentTableName);
                     let functionParameters = JSON.parse(parameters);
-                    functionParameters = await this.executeFormula(functionParameters, currentTableName);
                     let externalFunction = await this.externalFunctions[functionName](functionParameters);
                     return externalFunction;
                 default:
@@ -60,6 +63,17 @@ export class FormulaService{
             }
         } else {
             return formula;
+        }
+    }
+
+    private placeholderMap(table: Table) {
+        let rows = table.rows;
+        for (let i = 0; i < rows.length; i++) {
+            let row = rows[i];
+            for (let j = 0; j < row.columns.length; j++) {
+                let column = row.columns[j];
+                column.orderBy.placeholder = this.getCharByNumber(j) + (i + 2);
+            }
         }
     }
 
