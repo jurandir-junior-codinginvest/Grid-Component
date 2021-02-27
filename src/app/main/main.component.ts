@@ -12,7 +12,7 @@ export class MainComponent implements OnInit {
   public externalFunctions:any;  
 
   constructor(public riskManagerService:RiskManagerService) {
-    this.meta = Balanceamento;//this.riskManagerService.get();
+    this.meta = Balanceamento;
     let getPrice = async(item:any)=> await this.getPrice(item);
     this.externalFunctions = {"getPrice":getPrice};
  }

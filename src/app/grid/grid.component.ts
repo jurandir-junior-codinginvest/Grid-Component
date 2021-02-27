@@ -1,518 +1,132 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { noop } from 'rxjs';
-import { Column, Row, Table } from '../class/Table';
+import { Component, Input, OnInit } from '@angular/core';
+import { Table } from '../class/Table';
+import { Column } from "../class/Column";
 import { GridService } from '../services/grid.service';
+import { PaginationService } from '../services/pagination.service';
 
 @Component({
   selector: 'j-grid',
   templateUrl: './grid.component.html',
   styleUrls: ['./grid.component.css']
 })
-export class GridComponent implements OnInit {
-  public tables: Array<Table> = new Array<Table>();
-  public tableSelected: string = "ATIVOS";
-  public tableSelectedIndex: number = 0;
-
-  private CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  private SPECIAL_CHARACTERS = "ÂÁÀÂÃÉÈÊÍÌÎÓÒÔÕÚÙÛ:!' ";
-  private NUMERIC = "0123456789";
-  private ALLOWED_CHARACTERS = this.CHARACTERS + this.CHARACTERS.toLowerCase() + this.SPECIAL_CHARACTERS + this.SPECIAL_CHARACTERS.toLowerCase();
-  private ALPHANUMERIC = this.ALLOWED_CHARACTERS + this.NUMERIC;
+export class GridComponent {
+  public tableNames: Array<string>;
+  public currentTable!: Table;
+  private paginationService!:PaginationService;
+  private gridService!:GridService;
 
   @Input()
-  public meta: any;
-  
-  @Input() 
-  public externalFunctions:any;
+  public data: any;
 
-  constructor(public gridService: GridService,private http:HttpClient) {
+  @Input()
+  public externalFunctions: any;
+
+  constructor(private http: HttpClient) {
+    this.tableNames = [];
   }
 
-  //--
-  private compileFormulas(currentTable: Table) {
-    currentTable.rows.forEach((row) => {
-      row.columns.forEach(async (column) => {
-        column.compiledValue = await this.executeFormula(column.value, currentTable.name);
-      });
-    });
+  ngOnInit() {
+    this.gridService = new GridService(this.data,this.externalFunctions);
+    let currentTable = this.gridService.getCurrentTable();
+    if(currentTable){
+    this.currentTable = currentTable;
+    } 
+    this.paginationService = new PaginationService(this.currentTable);
   }
 
-  private async executeFormula(formula: string, currentTableName: string) {
-    if (formula && formula.toString().indexOf("=") > -1) {
-      formula = formula.substr(1);
-      let command = this.getCommand(formula);
-      switch (command) {
-        case "SUM":
-          let sumResult = eval(await this.executeSUM(formula, currentTableName));
-          return sumResult.toString();
-        case "COUNTA":
-          let countaResult = eval(await this.executeCOUNTA(formula,currentTableName));
-          return countaResult.toString();
-        case "FUNCTION":
-          formula = formula.replace("FUNCTION","");
-          let functionName = formula.split(",")[0].replace("(","").replace("\"","").replace("\"","");
-          let parameters = formula.split(",")[1].replace(")","");
-          let functionParameters = JSON.parse(parameters);
-          let externalFunction = await this.externalFunctions[functionName](functionParameters);
-          return externalFunction;
-        default:
-          let defaultResult = await this.defaultExecuteFormula(formula, currentTableName)
-          let result = eval(defaultResult);
-          return result.toString();
-      }
-    } else {
-      return formula;
-    }
+  public getTableNames(){
+    return this.gridService.getLoadedTableNames();
   }
 
-  private async executeCOUNTA(countaFormula: string, currentTableName: string) {
-    let countaResult = 0;
-    let command = "COUNTA";
-    let startCOUNTA = countaFormula.indexOf(command);
-    countaFormula = countaFormula.substr(startCOUNTA+command.length);
-    let endCOUNTA = countaFormula.indexOf(")")+1;
-    let countaPlaceHolder = countaFormula.substr(startCOUNTA,endCOUNTA);
-    let addresses = this.getAddresses(countaFormula, currentTableName);
-    let cells = <string[]>await this.getCellsFromTable(addresses[0].normalizedAddress);
-    cells.forEach((cell:any) => {
-      countaResult += 1;
-    });
-    let counta =  countaResult.toString();
-    return countaFormula.replace(countaPlaceHolder,counta);
+  public selectColumn(column: Column) {
+    return this.gridService.selectColumn(column);
   }
 
-  private async executeSUM(sumFormula: string, currentTableName: string) {
-    let sumResult = 0;
-    let command = "SUM";
-    let startSUM = sumFormula.indexOf(command);
-    sumFormula = sumFormula.substr(startSUM+command.length);
-    let endSUM = sumFormula.indexOf(")")+1;
-    let sumPlaceHolder = sumFormula.substr(startSUM,endSUM);
-    let addresses = this.getAddresses(sumFormula, currentTableName);
-    let cells = <string[]>await this.getCellsFromTable(addresses[0].normalizedAddress);
-    cells.forEach((cell:any) => {
-      sumResult += parseFloat(cell);
-    });
-    return sumFormula.replace(sumPlaceHolder,sumResult.toString());
+  public getTakeSelector() {
+    return this.gridService.getTakeSelector();
   }
 
-  private async defaultExecuteFormula(formula: string, currentTableName: string) {
-    let addresses = this.getAddresses(formula, currentTableName);
-    for (let i = 0; i < addresses.length; i++) {
-      let cells = await this.getCellsFromTable(addresses[i].normalizedAddress);
-      let cell = cells[0];
-      let cellValue = await this.executeFormula(cell, currentTableName);
-     if(cellValue){
-        formula = formula.replace(addresses[i].rawAddress, cellValue.toString());
-     }
-    }
-    return formula;
+  public getOperationSelector() {
+    return this.gridService.getOperationSelector();
   }
 
-  private getCommand(formula: string) {
-    let command = "";
-    for (let i = 0; i < formula.length; i++) {
-      let char = formula[i];
-      if (this.CHARACTERS.indexOf(char) > -1) {
-        command += char;
-      } else {
-        if (command.length > 2) {
-          return command;
-        } else {
-          command = "";
-        }
-      }
-    }
-    return "NONE";
+  public changeSearchText(event: any) {
+    return this.gridService.changeSearchText(event);
   }
 
-  private getAddresses(formulaCommand: string, currentTableName: string) {
-    let addresses = new Array<addressNormalization>();
-    let address = "";
-    for (let i = 0; i < formulaCommand.length; i++) {
-      let char = formulaCommand[i];
-      if (this.ALPHANUMERIC.indexOf(char) > -1) {
-        address += char;
-      } else {
-        if (address.length > 0) {
-          let hasColumun = this.ALLOWED_CHARACTERS.indexOf(address.substr(0, 1)) > -1;
-
-          let newAddress: addressNormalization = { rawAddress: address, normalizedAddress: this.normalizeAddress(address, currentTableName) };
-          if (hasColumun) {
-            addresses.push(newAddress);
-          }
-
-          address = "";
-        }
-      }
-    }
-    if (address.length > 0) {
-      let hasColumun = this.ALLOWED_CHARACTERS.indexOf(address.substr(0, 1)) > -1;
-      let newAddress: addressNormalization = { rawAddress: address, normalizedAddress: this.normalizeAddress(address, currentTableName) };
-      if (hasColumun) {
-        addresses.push(newAddress);
-      }
-    }
-    return addresses;
+  public changeOperation(event: any) {
+    return this.gridService.changeOperation(event);
   }
 
-  private normalizeAddress(address: string, currentTableName: string) {
-    return address.indexOf("!") > -1 ? address : "'" + currentTableName + "'!" + address;
+  public selectAllCoumns() {
+    return this.gridService.selectAllCoumns();
   }
 
-  private async getCellsFromTable(normalizedAddress: string) {
-    let tableName = normalizedAddress.split("!")[0].replace("'", "").replace("'", "");
-    let cellAddress = normalizedAddress.split("!")[1];
-    let table = <Table>this.getTableByName(tableName);
-    return await this.getCells(cellAddress, table);
+  public toOrder(column: Column) {
+    return this.gridService.toOrder(column);
   }
 
-  private getTableByName(tableName: string) {
-    return this.tables.find(x => x.name == tableName);
+  public changeTake(event: any) {
+    return this.gridService.changeTake(event);
   }
 
-  private async getCells(cellAddress: string, table: Table) {
-    let cells = new Array<string>();
-    if(cellAddress=="D2:D")
-    noop();
-    let isRange = cellAddress.indexOf(":") > -1;
-    if (!isRange) {
-      for(let i=0;i<table.rows.length;i++){
-        let row = table.rows[i];
-        for(let j=0;j<row.columns.length;j++){
-          let column = row.columns[j];
-          if (column.orderBy.placeholder == cellAddress) {
-            let columnValue = await this.executeFormula(column.value,table.name);
-            cells.push(columnValue.toString());
-            return cells;
-          }
-        }
-      }
-    } else {
-      let from = cellAddress.split(":")[0];
-      let to = cellAddress.split(":")[1];
-      from = from.length == 1 ? from + "1" : from;
-      to = to.length == 1 ? to + table.rows.length+1 : to;
-
-      let fromColumn = from.substr(0, 1);
-      let fromRow = from.substr(1);
-      let toColumn = to.substr(0, 1);
-      let toRow = to.substr(1);
-
-      let fromColumnIndex = this.getNumberByChar(fromColumn);
-      let fromRowIndex = parseInt(fromRow);
-      let toColumnIndex = this.getNumberByChar(toColumn);
-      let toRowIndex = parseInt(toRow);
-
-      //direction 0 = left, 1 = right
-      let columnDirection = fromColumnIndex <= toColumnIndex ? 0 : 1;
-      let rowDirection = fromRowIndex <= toRowIndex ? 0 : 1;
-
-      for(let i=0;i<table.rows.length;i++){
-        let row = table.rows[i];
-        for(let j=0;j<row.columns.length;j++){
-          let column = row.columns[j];
-          let cellColumn = this.getNumberByChar(column.orderBy.placeholder.substr(0, 1));
-          let cellRow = parseInt(column.orderBy.placeholder.substr(1));
-          let isColumnInRange = false;
-          let isRowInRange = false;
-
-          if (columnDirection == 0) {
-            if (cellColumn >= fromColumnIndex && cellColumn <= toColumnIndex) {
-              isColumnInRange = true;
-            }
-          } else {
-            if (cellColumn <= fromColumnIndex && cellColumn >= toColumnIndex) {
-              isColumnInRange = true;
-            }
-          }
-
-          if (rowDirection == 0) {
-            if (cellRow >= fromRowIndex && cellRow <= toRowIndex) {
-              isRowInRange = true;
-            }
-          } else {
-            if (cellRow <= fromRowIndex && cellRow >= toRowIndex) {
-              isRowInRange = true;
-            }
-          }
-
-          if (isColumnInRange && isRowInRange) {
-            let columnValue = await this.executeFormula(column.value,table.name);
-            cells.push(columnValue);
-          }
-        }
-      }
-      
-    }
-
-    return cells;
+  public isTableActive(index: number) {
+    return this.gridService.isTableActive(index);
   }
 
-  private getCharByNumber(charNumber: number) {
-    return this.CHARACTERS[charNumber];
+  public activeTable(index: number) {
+    this.currentTable = this.gridService.activeTable(index);
   }
 
-  private getNumberByChar(char: string) {
-    return this.CHARACTERS.indexOf(char);
+  public getColumns() {
+    return this.gridService.getColumns();
   }
-  //--
 
-
-  ngOnInit(): void {
-    this.tables = this.readTable(this.meta);
-    for (let i = 0; i < this.tables.length; i++) {
-      let table = this.tables[i];
-      this.compileFormulas(table);
-    }
+  public getRows() {
+    return this.gridService.getRows();
   }
 
   public selectedTake(itemValue: string, currentTake: number) {
-    let selectedTake = parseInt(itemValue);
-    return selectedTake == currentTake;
+    return this.paginationService.selectedTake(itemValue, currentTake);
   }
 
-  public getRows(table: Table) {
-    let rows = this.searchOperation(table);
-    rows = this.ordering(rows);
-    let start = table.page == 1 ? 0 : (((table.page - 1) * table.take));
-    let end = table.page * table.take;
-    rows = (<Array<Row>>rows).slice(start, end);
-    return rows;
+  public setPage(page: number) {
+    return this.paginationService.setPage(page);
   }
 
-  public selectColumn(column: Column, table: Table) {
-    column.selected = !column.selected;
-    if (column.selected) {
-      table.searchColumns.push(column.name);
-    } else {
-      let searchIndex = table.searchColumns.findIndex(x => x == column.name);
-      table.searchColumns.splice(searchIndex, 1);
-    }
+  public allowGoToStart() {
+    return this.paginationService.allowGoToStart();
   }
 
-  private ordering(rows: Array<Row>) {
-    let selectedOrderColumn = this.tables[this.tableSelectedIndex].selectedOrderColumn;
-    return rows.sort((row1, row2) => {
-      let column1 = row1.columns.find(x => x.name == selectedOrderColumn.name);
-      let column2 = row2.columns.find(x => x.name == selectedOrderColumn.name);
-      let compiledValue1 = column1 ? column1.compiledValue : "0";
-      let compiledValue2 = column2 ? column2.compiledValue : "0";
-      if (selectedOrderColumn.orderBy.orderByType == 1)
-        return parseFloat(compiledValue1) - parseFloat(compiledValue2);
-      else
-        return parseFloat(compiledValue2) - parseFloat(compiledValue1);
-    });
+  public allowGoBack() {
+    return this.paginationService.allowGoBack();
   }
 
-  private searchOperation(table: Table) {
-    switch (table.searchOperation) {
-      case "contains":
-        if (table.searchAllColumns)
-          return table.rows.filter(x => x.columns.findIndex(z => z.compiledValue.toString().indexOf(table.searchText) > -1) > -1);
-        else
-          return table.rows.filter(x => x.columns.findIndex(z => table.searchColumns.findIndex(y => y == z.name) > -1 && z.compiledValue.toString().indexOf(table.searchText) > -1) > -1);
-      case "equals":
-        if (table.searchAllColumns)
-          return table.rows.filter(x => x.columns.findIndex(z => z.compiledValue == table.searchText) > -1);
-        else
-          return table.rows.filter(x => x.columns.findIndex(z => table.searchColumns.findIndex(y => y == z.name) > -1 && z.compiledValue == table.searchText) > -1);
-      case "startwith":
-        if (table.searchAllColumns)
-          return table.rows.filter(x => x.columns.findIndex(z => z.compiledValue.toString().startsWith(table.searchText)) > -1);
-        else
-          return table.rows.filter(x => x.columns.findIndex(z => table.searchColumns.findIndex(y => y == z.name) > -1 && z.compiledValue.toString().startsWith(table.searchText)) > -1);
-      case "endwith":
-        if (table.searchAllColumns)
-          return table.rows.filter(x => x.columns.findIndex(z => z.compiledValue.toString().endsWith(table.searchText)) > -1);
-        else
-          return table.rows.filter(x => x.columns.findIndex(z => table.searchColumns.findIndex(y => y == z.name) > -1 && z.compiledValue.toString().endsWith(table.searchText)) > -1);
-      case "higher":
-        if (table.searchAllColumns)
-          return table.rows.filter(x => x.columns.findIndex(z => parseFloat(z.compiledValue) < parseFloat(table.searchText)) > -1);
-        else
-          return table.rows.filter(x => x.columns.findIndex(z => table.searchColumns.findIndex(y => y == z.name) > -1 && parseFloat(z.compiledValue) > parseFloat(table.searchText)) > -1);
-      case "smaller":
-        if (table.searchAllColumns)
-          return table.rows.filter(x => x.columns.findIndex(z => parseFloat(z.compiledValue) > parseFloat(table.searchText)) > -1);
-        else
-          return table.rows.filter(x => x.columns.findIndex(z => table.searchColumns.findIndex(y => y == z.name) > -1 && parseFloat(z.compiledValue) < parseFloat(table.searchText)) > -1);
-      case "equalhigher":
-        if (table.searchAllColumns)
-          return table.rows.filter(x => x.columns.findIndex(z => parseFloat(z.compiledValue) <= parseFloat(table.searchText)) > -1);
-        else
-          return table.rows.filter(x => x.columns.findIndex(z => table.searchColumns.findIndex(y => y == z.name) > -1 && parseFloat(z.compiledValue) >= parseFloat(table.searchText)) > -1);
-      case "equalsmaller":
-        if (table.searchAllColumns)
-          return table.rows.filter(x => x.columns.findIndex(z => parseFloat(z.compiledValue) >= parseFloat(table.searchText)) > -1);
-        else
-          return table.rows.filter(x => x.columns.findIndex(z => table.searchColumns.findIndex(y => y == z.name) > -1 && parseFloat(z.compiledValue) <= parseFloat(table.searchText)) > -1);
-    }
-    return new Array<Row>();
+  public allowGoNext() {
+    return this.paginationService.allowGoNext();
   }
 
-  public setPage(page: number, table: Table) {
-    table.page = page;
+  public allowGoToEnd() {
+    return this.paginationService.allowGoToEnd();
   }
 
-  public allowGoToStart(table: Table) {
-    return table.page > 4;
+  public getPreviewPage() {
+    return this.paginationService.getPreviewPage();
   }
 
-  public allowGoBack(table: Table) {
-    return table.page > 3;
+  public getNextPage() {
+    return this.paginationService.getNextPage();
   }
 
-  public allowGoNext(table: Table) {
-    let take = this.getCurrentTake(table);
-    return table.page < (take - 1);
+  public getTo() {
+    return this.paginationService.getTo();
   }
 
-  public allowGoToEnd(table: Table) {
-    let take = this.getCurrentTake(table);
-    return table.page < (take - 2);
+  public getFrom() {
+    return this.paginationService.getFrom();
   }
 
-  private getCurrentTake(table: Table) {
-    return (table.rows.length / table.take) - 1;
-  }
-
-  public getPreviewPage(table: Table) {
-    let previewsPage = [];
-    let pageTakeDifference = table.take - table.page;
-    let difference = 2 - pageTakeDifference;
-    difference = difference < 0 ? 0 : difference;
-    let previewDifference = table.page - (3 + difference);
-
-    let page = table.page;
-    if (page > 1) {
-      for (let i = page; i > previewDifference; i--) {
-        if (page - i > 0 && (page - i) + previewDifference > 0)
-          previewsPage.push((page - i) + previewDifference);
-      }
-    }
-    return previewsPage;
-  }
-
-  public getNextPage(table: Table) {
-    let take = this.getCurrentTake(table);
-    let nextDifference = table.page + 2;
-    if (table.page < 4)
-      nextDifference = 5;
-    let nextPage = [];
-    for (let i = table.page; i < nextDifference; i++) {
-      if (i <= take)
-        nextPage.push(i + 1);
-    }
-    return nextPage;
-  }
-
-  public getTo(table: Table) {
-    return ((table.page * table.take) > table.rows.length) ? table.rows.length : table.page * table.take;
-  }
-
-  public getFrom(table: Table) {
-    return table.page == 1 ? 1 : (((table.page - 1) * table.take) + 1);
-  }
-
-  public save() {
-    console.error("not implemented");
-  }
-
-  private placeholderMap(table: Table) {
-    let rows = table.rows;
-    for (let i = 0; i < rows.length; i++) {
-      let row = rows[i];
-      for (let j = 0; j < row.columns.length; j++) {
-        let column = row.columns[j];
-        column.orderBy.placeholder = this.getCharByNumber(j) + (i + 2);
-      }
-    }
-  }
-
-  private readTable(meta: any) {
-    let tables = new Array<Table>();
-    let tableNames = this.readTableNames(meta);
-    for (let i = 0; i < tableNames.length; i++) {
-      let tableName = tableNames[i];
-      let table = new Table();
-      table.name = tableName;
-      table.rows = this.readRows(meta[tableName]);
-      this.placeholderMap(table);
-      tables.push(table);
-    }
-    return tables;
-  }
-
-  private readTableNames(meta: any) {
-    let tableNames = new Array<string>();
-    for (let name in meta) {
-      tableNames.push(name);
-    }
-    return tableNames;
-  }
-
-  private readRows(meta: any): Array<Row> {
-    if (Array.isArray(meta)) {
-      return this.readRowIfArray(meta);
-    } else {
-      return this.readRowIfNotArray(meta);
-    }
-  }
-
-  private readRowIfArray(meta: any): Array<Row> {
-    let rows = new Array<Row>();
-    for (let i = 0; i < meta.length; i++) {
-      let metaRow = meta[i];
-      let row = new Row();
-      row.columns = this.readColumns(metaRow);
-      rows.push(row);
-    }
-    return rows;
-  }
-
-  private readColumns(metaRow: any) {
-    let columns = new Array<Column>();
-    for (let columnName in metaRow) {
-      let column = new Column();
-      column.name = columnName;
-      column.selected = false;
-      column.value = metaRow[columnName];
-      columns.push(column);
-    }
-    return columns;
-  }
-
-  private readRowIfNotArray(meta: any): Array<Row> {
-    let rows = new Array<Row>();
-    let row = new Row();
-    row.columns = this.readColumns(meta);
-    rows.push(row);
-    return rows;
-  }
-
-  public isTable(item: any) {
-    let table = item[0] instanceof Table;
-    return table;
-  }
-
-  public clickNav(name: any, index: any) {
-    this.tableSelected = name;
-    this.tableSelectedIndex = index;
-  }
-
-  public newRow() {
-    let columns = this.tables[this.tableSelectedIndex].rows[0].columns;
-    let emptyColumns = [];
-    for (let i = 0; i < columns.length - 1; i++) {
-      emptyColumns.push(columns[i]);
-    }
-    return emptyColumns;
-  }
 }
 
-type addressNormalization = {
-  rawAddress: string;
-  normalizedAddress: string;
-}
+

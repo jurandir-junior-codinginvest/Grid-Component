@@ -5,9 +5,7 @@ import { AppComponent } from './app.component';
 import { GridComponent } from './grid/grid.component';
 import { MainComponent } from './main/main.component';
 import { RiskManagerService } from './services/risk-manager.service';
-import { GridService } from './services/grid.service';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { SubGridComponent } from './sub-grid/sub-grid.component';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 
@@ -15,8 +13,7 @@ import { HttpClientModule } from '@angular/common/http';
   declarations: [
     AppComponent,
     GridComponent,
-    MainComponent,
-    SubGridComponent
+    MainComponent
   ],
   imports: [
     BrowserModule,
@@ -25,7 +22,7 @@ import { HttpClientModule } from '@angular/common/http';
     CommonModule,
     HttpClientModule,
   ],
-  providers: [RiskManagerService,GridService],
+  providers: [RiskManagerService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
