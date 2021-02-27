@@ -3,6 +3,7 @@ import { Table } from '../class/Table';
 import { Column } from "../class/Column";
 import { GridService } from '../services/grid.service';
 import { PaginationService } from '../services/pagination.service';
+import { i18nMetaToJSDoc } from '@angular/compiler/src/render3/view/i18n/meta';
 
 @Component({
   selector: 'j-grid',
@@ -11,7 +12,7 @@ import { PaginationService } from '../services/pagination.service';
 })
 export class GridComponent {
   public tableNames: Array<string>;
-  public currentTable: Table | null;
+  public currentTable!: Table;
 
   @Input()
   public data: any;
@@ -21,12 +22,13 @@ export class GridComponent {
 
   constructor(private gridService: GridService,private paginationService:PaginationService, private changeDetector: ChangeDetectorRef) {
     this.tableNames = [];
-    this.currentTable = null;
   }
 
   ngOnInit() {
-    this.gridService.init(this.data);
-    this.currentTable = this.gridService.getCurrentTable();
+    if(this.data){
+        this.gridService.init(this.data);
+        this.currentTable = <Table>this.gridService.getCurrentTable();
+      }
   }
 
   public detectChanges() {
