@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { RiskManagerService } from '../services/risk-manager.service';
-import { Balanceamento } from '../../assets/sample.json';
+import * as Balanceamento from '../../assets/sample.json';
 import { GridService } from '../services/grid.service';
 
 @Component({
@@ -13,7 +13,7 @@ export class MainComponent implements OnInit {
   public externalFunctions: any;
 
   constructor(public riskManagerService: RiskManagerService, private gridService: GridService) {
-    this.meta = Balanceamento;
+    this.meta = (<any>Balanceamento).default;
     this.gridService.setExternalFunctions("getPrice", async (item: any) => await this.getPrice(item));
   }
 

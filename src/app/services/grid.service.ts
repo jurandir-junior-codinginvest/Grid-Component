@@ -51,6 +51,20 @@ export class GridService {
         }
     }
 
+    public save(){}
+
+    public export(data:any){
+        let fileName = window.prompt("Please type file name:");
+        var sJson = JSON.stringify(data);
+        var element = document.createElement('a');
+        element.setAttribute('href', "data:text/json;charset=UTF-8," + encodeURIComponent(sJson));
+        element.setAttribute('download', fileName+".json");
+        element.style.display = 'none';
+        document.body.appendChild(element);
+        element.click(); // simulate click
+        document.body.removeChild(element);
+    }
+
     public setExternalFunctions(methodName: string, method: any) {
         this.formulaService.setExternalFunctions(methodName, method);
     }
@@ -165,7 +179,6 @@ export class GridService {
             }
         }
     }
-
 
     //Private Processors
     private ordering(rows: Array<Row>) {

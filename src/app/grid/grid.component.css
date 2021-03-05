@@ -23,7 +23,6 @@
 }
 
 .check-all{
-    margin-top:15px;
     margin-right:20px;
     float:right;
 }
@@ -43,3 +42,24 @@
     color:#000;
     text-decoration: underline;
 }
+
+.search-bar-item{
+    width:50%;
+    height:38px;
+    margin-top:16px;
+    margin-bottom:16px;
+}
+
+.complement-search-item{
+    margin-left: 0px;
+    height: 38px;
+    float: left;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.upload-and-download{
+    margin-bottom: 16px;
+    margin-top: 16px;
+}
+

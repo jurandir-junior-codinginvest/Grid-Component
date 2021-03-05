@@ -3,10 +3,9 @@ import { Table } from '../class/Table';
 import { Column } from "../class/Column";
 import { GridService } from '../services/grid.service';
 import { PaginationService } from '../services/pagination.service';
-import { i18nMetaToJSDoc } from '@angular/compiler/src/render3/view/i18n/meta';
 
 @Component({
-  selector: 'j-grid',
+  selector: 'grid',
   templateUrl: './grid.component.html',
   styleUrls: ['./grid.component.css']
 })
@@ -29,6 +28,20 @@ export class GridComponent {
         this.gridService.init(this.data);
         this.currentTable = <Table>this.gridService.getCurrentTable();
       }
+  }
+
+  public importFile(event:any){
+      let file = event.target.files[0];
+      let fileReader = new FileReader();
+      fileReader.readAsText(file,"UTF-8");
+      fileReader.onload = ()=>{
+        this.data = JSON.parse(<string>fileReader.result);
+        this.ngOnInit();
+      };
+  }
+
+  public exportFile(){
+    this.gridService.export(this.data);
   }
 
   public detectChanges() {
