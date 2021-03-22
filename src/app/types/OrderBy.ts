@@ -1,4 +1,4 @@
-import { OrderByType } from "../enum/OrderByType";
+import { OrderBy as OrderByType } from "../enum/OrderBy";
 
 
 export type OrderBy = {

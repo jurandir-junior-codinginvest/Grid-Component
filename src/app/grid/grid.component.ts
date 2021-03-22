@@ -24,6 +24,7 @@ export class GridComponent {
   }
 
   ngOnInit() {
+    this.currentTable = new Table();
     if(this.data){
         this.gridService.init(this.data);
         this.currentTable = <Table>this.gridService.getCurrentTable();

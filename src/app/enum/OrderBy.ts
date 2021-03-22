@@ -1,4 +1,4 @@
-export enum OrderByType {
+export enum OrderBy {
     neutral,
     ascend,
     descend

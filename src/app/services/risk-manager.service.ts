@@ -55,14 +55,14 @@ export class RiskManagerService{
     public async getStockPrice(item:any){
         let cotation = this.cotations.find(x=>x.symbol==item.symbol);
         if(!cotation){
-         cotation = {symbol:item.symbol,price:"Carregando..."};
+         cotation = {symbol:item.symbol,price:"loading"};
+         this.cotations.push(cotation);
          let result = <any>(await this.http.get("/stocks/finance/stock_price?key=bc3c001b&symbol="+item.symbol).toPromise().catch((exc)=>{return exc}));
          if(result.status==403){
             cotation.price = result.statusText;
          }else{
             cotation.price = result["results"][item.symbol.toUpperCase()]["price"];
          }
-         this.cotations.push(cotation);
         }
         return cotation.price;
     }

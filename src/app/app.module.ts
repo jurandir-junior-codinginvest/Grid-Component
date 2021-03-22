@@ -8,6 +8,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { GridModule } from './grid/grid.module';
+import { ConvertionService } from './services/convertion.service';
 
 @NgModule({
   declarations: [
@@ -22,7 +23,7 @@ import { GridModule } from './grid/grid.module';
     HttpClientModule,
     GridModule
   ],
-  providers: [RiskManagerService],
+  providers: [RiskManagerService,ConvertionService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

@@ -1,5 +1,4 @@
 {
-    "Balanceamento":{
         "ATIVOS":[
             {"Ativo":"BRML3","Quantidade":100,"Cotação":"=FUNCTION(\"getPrice\",{\"symbol\":\"BRML3\"})","Valor":"=B2*C2","Participação":"=(D2/Mecanismo!I2)*100","Comprar/Vender":"=((Mecanismo!F2/C2)-B2)"},
             {"Ativo":"ITSA4","Quantidade":100,"Cotação":"=FUNCTION(\"getPrice\",{\"symbol\":\"ITSA4\"})","Valor":"=B3*C3","Participação":"=(D3/Mecanismo!I2)*100","Comprar/Vender":"=((Mecanismo!F2/C3)-B3)"},
@@ -16,5 +15,4 @@
         "CAIXA":[
             {"Ativo":"CAIXA","Quantidade inicial":480000,"Quantidade final":480000,"Cotação":0.01,"Valor":"=D2*C2","Participação":"=(E2/Mecanismo!I2)*100","Comprar/Vender":"=H2/D2","Saldo disponível":"=Mecanismo!G2"}
         ]
-    }
 }

@@ -1,4 +1,4 @@
-import { Injectable } from "@angular/core";
+import { Injectable, OnChanges, SimpleChanges } from "@angular/core";
 import { Table } from "../class/Table";
 import { AddressNormalization } from "../types/AddressNormalization";
 
@@ -14,7 +14,7 @@ export class FormulaService{
     
     constructor(){
     }
-
+    
     public init(tables:Array<Table>){
         this.tables = tables;
         for(let i =0;i<this.tables.length;i++){
@@ -57,7 +57,7 @@ export class FormulaService{
                     let externalFunction = await this.externalFunctions[functionName](functionParameters);
                     return externalFunction;
                 default:
-                    let formulaResult = await this.executeFormula(formula, currentTableName)
+                    let formulaResult = await this.executeFormula(formula, currentTableName);
                     let result = eval(formulaResult);
                     return result.toString();
             }
@@ -188,7 +188,10 @@ export class FormulaService{
                 for (let j = 0; j < row.columns.length; j++) {
                     let column = row.columns[j];
                     if (column.orderBy.placeholder == cellAddress) {
-                        let columnValue = await this.compileFormula(column.value, table.name);
+                        let value = column.compiledValue;
+                        if(value=="")
+                            value = await this.compileFormula(column.value, table.name);
+                        let columnValue = value;
                         cells.push(columnValue.toString());
                         return cells;
                     }
@@ -244,7 +247,10 @@ export class FormulaService{
                     }
 
                     if (isColumnInRange && isRowInRange) {
-                        let columnValue = await this.compileFormula(column.value, table.name);
+                        let value = column.compiledValue;
+                        if(value=="")
+                        value = await this.compileFormula(column.value, table.name);
+                        let columnValue = value;
                         cells.push(columnValue);
                     }
                 }

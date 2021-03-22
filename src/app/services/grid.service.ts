@@ -2,7 +2,7 @@ import { Injectable } from "@angular/core";
 import { Column } from "../class/Column";
 import { Row } from "../class/Row";
 import { Table } from "../class/Table";
-import { OrderByType } from "../enum/OrderByType";
+import { OrderBy } from "../enum/OrderBy";
 import { ComboBox } from "../types/ComboBox";
 import { FormulaService } from "./formula.service";
 import { PaginationService } from "./pagination.service";
@@ -151,18 +151,18 @@ export class GridService {
 
     public toOrder(column: Column) {
         if (this.tableSelected) {
-            if (column.orderBy.orderByType == OrderByType.ascend) {
-                column.orderBy.orderByType = OrderByType.descend;
+            if (column.orderBy.orderByType == OrderBy.ascend) {
+                column.orderBy.orderByType = OrderBy.descend;
             } else {
-                if (column.orderBy.orderByType == OrderByType.descend) {
-                    column.orderBy.orderByType = OrderByType.neutral;
+                if (column.orderBy.orderByType == OrderBy.descend) {
+                    column.orderBy.orderByType = OrderBy.neutral;
                 } else {
-                    column.orderBy.orderByType = OrderByType.ascend;
+                    column.orderBy.orderByType = OrderBy.ascend;
                 }
             }
 
             if (column.name != this.tableSelected.selectedOrderColumn.name)
-                this.tableSelected.selectedOrderColumn.orderBy.orderByType = OrderByType.neutral;
+                this.tableSelected.selectedOrderColumn.orderBy.orderByType = OrderBy.neutral;
 
             this.tableSelected.selectedOrderColumn = column;
         }

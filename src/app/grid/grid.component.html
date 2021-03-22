@@ -12,7 +12,7 @@
   </nav>
   <div class="tab-content">
   <div class="tab-pane fade show active" role="tabpanel" id="asset">
-    <div class="btn-group search-bar" *ngIf="currentTable.rows.length>0">
+    <div class="btn-group search-bar" *ngIf="currentTable.rows && currentTable.rows.length>0">
     <input type="text" name="search" class="search-bar-item" placeholder="search...." (change)="changeSearchText($event)" value="{{currentTable.searchText}}">
     <div class="search-bar-item">
       <select (change)="changeOperation($event)" class="complement-search-item">
@@ -22,7 +22,8 @@
       </div>
     </div>
       <input style="display: none" type="file" (change)="importFile($event)" #fileInput>
-    <div class="btn btn-group" *ngIf="false && currentTable.rows.length>0">
+    <!-- <div class="btn btn-group" *ngIf="false && currentTable.rows?.length>0"> -->
+      <div class="btn btn-group">
       <button class="btn btn-secondary" (click)="currentTable.showReference=!currentTable.showReference"><i class="fa fa-calculator"></i></button>
     </div>
     <div class="check-all d-none d-lg-block" *ngIf="currentTable">
