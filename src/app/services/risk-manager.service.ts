@@ -67,6 +67,7 @@ export class RiskManagerService{
         return cotation.price;
     }
 
+
     public get(){
         return this.riskManager;
     }

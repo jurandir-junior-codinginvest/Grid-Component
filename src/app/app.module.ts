@@ -9,6 +9,9 @@ import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { GridModule } from './grid/grid.module';
 import { ConvertionService } from './services/convertion.service';
+import { Cryptography } from './services/cryptography';
+import { GridEditorModule } from './grid-editor/grid-editor.module';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 @NgModule({
   declarations: [
@@ -21,9 +24,15 @@ import { ConvertionService } from './services/convertion.service';
     BrowserAnimationsModule,
     CommonModule,
     HttpClientModule,
+    GridModule,
+    GridEditorModule,
+    NgbModule,
+  ],
+  exports:[
+    GridEditorModule,
     GridModule
   ],
-  providers: [RiskManagerService,ConvertionService],
+  providers: [RiskManagerService,ConvertionService,Cryptography],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

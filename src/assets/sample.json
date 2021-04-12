@@ -14,5 +14,8 @@
         ],
         "CAIXA":[
             {"Ativo":"CAIXA","Quantidade inicial":480000,"Quantidade final":480000,"Cotação":0.01,"Valor":"=D2*C2","Participação":"=(E2/Mecanismo!I2)*100","Comprar/Vender":"=H2/D2","Saldo disponível":"=Mecanismo!G2"}
+        ],
+        "Passwords":[
+            {"Key":"Jurandir é demais", "EncryptedKey":"=FUNCTION(\"Encrypt\",{\"text\":\"Jurandir é demais\"})","DecryptedKey":"=FUNCTION(\"Decrypt\",{\"text\":\"ÖåÔåÓÛÖ Ĺ×ØäÐÛ×\"})"}
         ]
 }

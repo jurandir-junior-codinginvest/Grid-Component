@@ -51,9 +51,8 @@ export class GridService {
         }
     }
 
-    public save(){}
-
-    public export(data:any){
+    public export(){
+        let data = this.transformTableToJson(this.tables);
         let fileName = window.prompt("Please type file name:");
         var sJson = JSON.stringify(data);
         var element = document.createElement('a');
@@ -245,6 +244,27 @@ export class GridService {
             }
         }
         return new Array<Row>();
+    }
+
+    public transformTableToJson(tables: Array<Table>){
+        let json:any = {};
+        for(let i=0;i<tables.length;i++){
+            let table = tables[i];
+            json[table.name] = [];
+            
+            let jsonTable = json[table.name];
+
+            for(let j=0;j<table.rows.length;j++){
+                let row = table.rows[j];
+                let columns:any = {};
+                for(let k=0;k<row.columns.length;k++){
+                    let column = row.columns[k];
+                    columns[column.name] = column.value;
+                }
+                jsonTable.push(columns);
+            }
+        }
+        return json;
     }
 
     private transformJsonToTable(data: any) {

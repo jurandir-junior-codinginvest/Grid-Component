@@ -51,7 +51,9 @@ export class FormulaService{
                     let functionName = formula.split(",")[0].replace("(", "").replace("\"", "").replace("\"", "");
                     if(!this.externalFunctions[functionName])
                         return "Function not found!";
-                    let parameters = formula.split(",")[1].replace(")", "");
+                    let formulaSplited = formula.split(",");
+                    formulaSplited.shift();
+                    let parameters = formulaSplited.join(",").replace(")", "");
                     parameters = await this.executeFormula(parameters, currentTableName);
                     let functionParameters = JSON.parse(parameters);
                     let externalFunction = await this.externalFunctions[functionName](functionParameters);

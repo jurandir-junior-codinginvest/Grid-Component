@@ -42,7 +42,7 @@ export class GridComponent {
   }
 
   public exportFile(){
-    this.gridService.export(this.data);
+    this.gridService.export();
   }
 
   public detectChanges() {
