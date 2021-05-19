@@ -9,7 +9,6 @@ import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { GridModule } from './grid/grid.module';
 import { ConvertionService } from './services/convertion.service';
-import { Cryptography } from './services/cryptography';
 import { GridEditorModule } from './grid-editor/grid-editor.module';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
@@ -30,9 +29,9 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
   ],
   exports:[
     GridEditorModule,
-    GridModule
+    GridModule,
   ],
-  providers: [RiskManagerService,ConvertionService,Cryptography],
+  providers: [RiskManagerService,ConvertionService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

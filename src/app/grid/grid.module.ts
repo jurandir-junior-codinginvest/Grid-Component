@@ -15,7 +15,7 @@ import { GridComponent } from "./grid.component";
         CommonModule,
     ],
     exports: [
-        GridComponent,
+        GridComponent
     ],
     providers: [GridService,FormulaService,PaginationService],
 })
