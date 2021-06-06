@@ -1,8 +1,8 @@
 import { ChangeDetectorRef, Component, Input } from '@angular/core';
-import { Table } from '../class/Table';
-import { Column } from "../class/Column";
-import { GridService } from '../services/grid.service';
-import { PaginationService } from '../services/pagination.service';
+import { Table } from './class/Table';
+import { Column } from "./class/Column";
+import { GridService } from './services/grid.service';
+import { PaginationService } from './services/pagination.service';
 
 @Component({
   selector: 'grid',
@@ -14,7 +14,7 @@ export class GridComponent {
   public currentTable!: Table;
 
   @Input()
-  public data: any;
+  public data?: any;
 
   @Input()
   public externalFunctions: any;

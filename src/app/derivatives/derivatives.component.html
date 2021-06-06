@@ -1,0 +1,19 @@
+<div class="form-group">
+    <label>Working Days</label>
+    <input type="number" name="workingDays" [(ngModel)]="workingDays" [value]="45" class="form-control">
+    </div>
+    
+    <div class="form-group">
+        <label>Investiment</label>
+        <input type="number" name="investiment"  [(ngModel)]="investiment" [value]="20000" class="form-control">
+    </div>
+    
+    <div class="form-group">
+        <label>Investiment Balancing</label>
+        <input type="number" name="balancing"  [(ngModel)]="balancing" [value]="8" class="form-control">
+    </div>
+
+    <div class="form-group">
+        <button class="btn btn-primary" (click)="search()">Search</button>
+    </div>
+    <grid></grid>

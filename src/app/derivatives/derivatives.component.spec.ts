@@ -1,20 +1,20 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { GridEditorComponent } from './grid-editor.component';
+import { DerivativesComponent } from './derivatives.component';
 
-describe('GridEditorComponent', () => {
-  let component: GridEditorComponent;
-  let fixture: ComponentFixture<GridEditorComponent>;
+describe('DerivativesComponent', () => {
+  let component: DerivativesComponent;
+  let fixture: ComponentFixture<DerivativesComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ GridEditorComponent ]
+      declarations: [ DerivativesComponent ]
     })
     .compileComponents();
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(GridEditorComponent);
+    fixture = TestBed.createComponent(DerivativesComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

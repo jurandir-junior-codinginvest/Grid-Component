@@ -3,19 +3,16 @@ import { NgModule } from '@angular/core';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { MainComponent } from './main/main.component';
-import { RiskManagerService } from './services/risk-manager.service';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
-import { GridModule } from './grid/grid.module';
-import { ConvertionService } from './services/convertion.service';
-import { GridEditorModule } from './grid-editor/grid-editor.module';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { DerivativesModule } from './derivatives/derivatives.module';
 
 @NgModule({
   declarations: [
     AppComponent,
-    MainComponent
+    MainComponent,
   ],
   imports: [
     BrowserModule,
@@ -23,15 +20,10 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
     BrowserAnimationsModule,
     CommonModule,
     HttpClientModule,
-    GridModule,
-    GridEditorModule,
     NgbModule,
+    DerivativesModule
   ],
-  exports:[
-    GridEditorModule,
-    GridModule,
-  ],
-  providers: [RiskManagerService,ConvertionService],
+  providers: [],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
