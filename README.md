@@ -1,5 +1,7 @@
 # JComponents
 
+This project was created to store components in angular for other projects, nowadays the component available is a grid componet used to display json data in to grid format, allowing to work on cels similar to excel.
+
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 11.0.7.
 
 ## Development server
